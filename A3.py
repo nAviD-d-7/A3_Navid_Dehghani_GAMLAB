@@ -94,16 +94,3 @@ GS_svr.best_params_
 
 
 
-
-#models = {
-#    'Linear Regression': linear_search,
- #   'KNeighbors Regressor': knn_search,
-  #  'Decision Tree Regressor': dt_search,
-   # 'Random Forest Regressor': rf_search,
-    #'Support Vector Regressor': svr_search
-#}
-
-#for model_name, search in models.items():
-#    print(f"Model: {model_name}")
- #   print(f"Best Score: {search.best_score_}")
-  #  print(f"Best Params: {search.best_params_}\n")
