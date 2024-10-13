@@ -92,5 +92,3 @@ GS_svr.fit(x_scaled, y)
 GS_svr.best_score_
 GS_svr.best_params_
 
-
-
