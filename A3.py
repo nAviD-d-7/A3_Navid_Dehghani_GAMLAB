@@ -53,8 +53,8 @@ GS_linear = GridSearchCV(linear_model, linear_param, cv=kf, scoring='neg_mean_ab
 
 GS_linear.fit(x_scaled, y)
 
-(GS_linear.best_score_)
-(GS_linear.best_params_)
+GS_linear.best_score_
+GS_linear.best_params_
 
 
 
@@ -66,8 +66,8 @@ GS_knn = GridSearchCV(knn_model, knn_param, cv=kf, scoring='neg_mean_absolute_pe
 
 GS_knn.fit(x_scaled, y)
 
-(GS_knn.best_score_)
-(GS_knn.best_params_)
+GS_knn.best_score_
+GS_knn.best_params_
 
 
 
