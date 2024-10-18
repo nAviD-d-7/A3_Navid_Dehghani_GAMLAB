@@ -1,22 +1,10 @@
 
 """
 Created on Sun Oct 13 20:06:13 2024
-
 @author: Navid Dehghani
 
-APM:
-baratoon taghirate lazem ro anjam dadsam , mesle moratab kardan
-taghire hypeparameter ha
-kafi hast done done run konid va result begirid va sepas dar enteha dar ghesmate report aval begdi data chi bode , x chi bode y chi bode va hadaf chi bode
-har model ch scori dare va behtrin kodome
-bad az etmam baraye bande ersal konid
-moafagh bashid
-
-
-
 """
-#-----------Import Libs----------------------
-import pandas as pd
+
 from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.linear_model import LinearRegression
@@ -25,103 +13,173 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
+import pandas as pd  
+import matplotlib.pyplot as plt
 
-#-----------Import Data----------------------
 data = fetch_california_housing()
 
-#-----------STEP1: X , Y----------------------
 x = data.data
 y = data.target
 
-#-----------STEP1: normalization of data----------------------
 scaler = MinMaxScaler() 
 x_scaled = scaler.fit_transform(x)
 
+df = pd.DataFrame(data.data, columns=data.feature_names)
+ 
+df['Price'] = y
 
-#-----------STEP2:KFOLD CROSS VALIDATION----------------------
-kf = KFold(n_splits=5, shuffle=True, random_state=42)
+sorted_df = df.sort_values(by='Price', ascending=False)
 
+kf = KFold(n_splits=15, shuffle=True, random_state=42)
 
-
-
-#----------MODEL 1 : LR----------------------
 
 linear_model = LinearRegression()
-linear_param = {}
+linear_param = {
+}
 
 GS_linear = GridSearchCV(linear_model, linear_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
-
 GS_linear.fit(x_scaled, y)
 
-GS_linear.best_score_
-GS_linear.best_params_
+
+print('Linear Regression best score:', GS_linear.best_score_)
+print('Linear Regression best params:', GS_linear.best_params_)
 
 
-
-#----------MODEL 2 : KNN----------------------
 knn_model = KNeighborsRegressor()
-knn_param = {'n_neighbors': [3, 5, 7], 'weights': ['uniform', 'distance']}
+knn_param = {
+    'n_neighbors': [10, 15, 20, 25],
+    'weights': ['uniform', 'distance'],
+    'algorithm': ['auto', 'ball_tree', 'kd_tree'],
+    'p': [1, 2] 
+}
 
 GS_knn = GridSearchCV(knn_model, knn_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
-
 GS_knn.fit(x_scaled, y)
 
-GS_knn.best_score_
-GS_knn.best_params_
 
+print('KNN best score:', GS_knn.best_score_)
+print('KNN best params:', GS_knn.best_params_)
 
-
-#----------MODEL 3 : DT----------------------
 
 dt_model = DecisionTreeRegressor()
-#dt_param = {'max_depth': [None, 10, 20, 30], 'min_samples_split': [2, 10, 20]}
-dt_param = {'max_depth': [1,2,3,4,5,6,7,8,9], 'min_samples_split': [2, 10, 20]}
-GS_dt = GridSearchCV(dt_model, dt_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
+dt_param = {
+    'max_depth': [5, 10, 25, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 3, 6, 10, 16]
+}
 
+GS_dt = GridSearchCV(dt_model, dt_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
 GS_dt.fit(x_scaled, y)
 
-GS_dt.best_score_
-GS_dt.best_params_
+
+print('Decision Tree best score:', GS_dt.best_score_)
+print('Decision Tree best params:', GS_dt.best_params_)
 
 
-
-#----------MODEL 4 : RF----------------------
 rf_model = RandomForestRegressor()
-#i CHanged the rf_params and increased max_dsepth ranges
-rf_param = {'n_estimators': [50, 100, 200], 'max_depth': [3,4,5,6,7,8,9]}
+rf_param = {'n_estimators': [50, 100, 200],
+            'max_depth': [3, 4, 5, 6, 7, 8, 9],
+            'min_samples_split': [2, 5, 10]
+}
 
 GS_rf = GridSearchCV(rf_model, rf_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
-
 GS_rf.fit(x_scaled, y)
 
-GS_rf.best_score_
-GS_rf.best_params_
+
+print('Random Forest best score:', GS_rf.best_score_)
+print('Random Forest best params:', GS_rf.best_params_)
 
 
-#----------MODEL 4 : SVR----------------------
 svr_model = SVR()
-#svr_param = {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
-svr_param = {'C': [0.001,0.01,0.1, 1, 10], 'kernel': ['linear', 'rbf','poly'],'degree':[2,3,4]}
-
+svr_param = {'C': [0.01, 0.1, 1, 10],
+             'kernel': ['linear', 'rbf', 'poly'],
+             'degree': [2, 3, 4]
+}
 
 GS_svr = GridSearchCV(svr_model, svr_param, cv=kf, scoring='neg_mean_absolute_percentage_error', n_jobs=-1)
-
 GS_svr.fit(x_scaled, y)
 
-GS_svr.best_score_
-GS_svr.best_params_
+
+ 
+print('SVR best score:', GS_svr.best_score_)
+print('SVR best params:', GS_svr.best_params_)
 
 
-#==================================
+scores = {
+    'Linear Regression': float(GS_linear.best_score_),
+    'KNN': float(GS_knn.best_score_),
+    'Decision Tree': float(GS_dt.best_score_),
+    'Random Forest': float(GS_rf.best_score_),
+    'SVR': float(GS_svr.best_score_)
+}
+
+
+accuracies = {model: (100 + score * 100) for model, score in scores.items()}
+for model, accuracy in accuracies.items():
+   print(model,'accuracy :', round(accuracy,2),'%')
+   
+   
+best_model = max(scores, key=lambda k:(scores[k]))
+print('Best Mmodel is :' , best_model , 'whit score :' , scores[best_model])
+
+
+if best_model == 'Linear Regression':
+    model = GS_linear
+elif best_model == 'KNN':
+    model = GS_knn
+elif best_model == 'Decision Tree':
+    model = GS_dt
+elif best_model == 'Random Forest':
+    model = GS_rf
+elif best_model == 'SVR':
+    model = GS_svr
+
+y_pred = model.predict(x_scaled)
+
+plt.figure(figsize=(10, 6))
+plt.plot(y, label='Actual values' ,color='red', linestyle='--', alpha=0.6)  # مقادیر واقعی
+plt.plot(y_pred, label='Model predictions', color='blue', alpha=0.6)  # مقادیر پیش‌بینی شده
+plt.legend()
+plt.title('Comparison of actual values ​​and model predictions (best model)')
+plt.xlabel('Samples')
+plt.ylabel('target value')
+plt.show()
+
 '''
 REPORT:
+man ba estefadeh az Pandas dadeh hay koneh hay california ro be x ha va y  moratab kardam :
+    
+x hai ma shamele 8 ta az parametr hai hast ke az 2000 ta koneh dar california jam avari kardan 
+x ha :
+    MedInc
+    HouseAge
+    AveRoomes
+    AveBedrms
+    Population
+    AveOccup
+    Latitude
+    Longitude
 
 
-
-
-
-
-
-
+y ma gheymate on khoneha hast 
+y :
+    Price
+....................................................................
+    
+In barnameh 5 model regrasion :
+    
+    Linear Regression
+    K-Nearest Neighbors (KNN) 
+    Decision Tree
+    Random Forest
+    Support Vector Regressor (SVR)
+    
+ roy e dadeha koneh haye california anjam midahad .  
+ 
+ Ba  estefadeh az GridSearchCV va tanzim parametr hai mokhtalf barayeh har model , deghat model ro balayeh 80% beresonim.
+ 
+ va dar enteha ba mohasebeh khata, mohasebeh deghat model , behtarin model barayeh regrasion ra miyabad va rasm mi konad.
+ 
+ BA TASHAKOR.
 
 '''
